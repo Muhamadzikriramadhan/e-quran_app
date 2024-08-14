@@ -20,32 +20,46 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
-    _initDelayed();
     _initAuth();
+    isBiometricAvailable();
   }
 
   Future<void> _initAuth() async {
-    isAuthenticated = await BiometricHelper().authenticate();
-    setState(() {});
+    while (!isAuthenticated) {
+      isAuthenticated = await BiometricHelper().authenticate();
+      if (!isAuthenticated) {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Authentication Failed"),
+              content: Text("Please authenticate using your fingerprint to continue."),
+              actions: [
+                TextButton(
+                  child: Text("Retry"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
 
-    await isBiometricAvailable();
+    if (isAuthenticated) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/home',
+            (route) => false,
+      );
+    }
   }
 
   Future<void> isBiometricAvailable() async {
     showBiometric = await BiometricHelper().hasEnrolledBiometrics();
     setState(() {});
-  }
-
-  void _initDelayed() {
-    Future.delayed(const Duration(milliseconds: 5000), () {
-      if (isAuthenticated) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-              (route) => false,
-        );
-      }
-    });
   }
 
   @override
@@ -67,7 +81,7 @@ class _SplashScreenPageState extends State<SplashScreenPage> {
             ),
             const SizedBox(height: 14),
             Text(
-              "E-Quran App", // Sample balance
+              "E-Quran App",
               style: whiteTextStyle.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
