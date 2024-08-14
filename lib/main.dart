@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:equran_app/services/equran_services.dart';
+import 'package:equran_app/blocs/surah/surah_bloc.dart';
 import 'package:equran_app/shared/theme.dart';
 import 'package:equran_app/ui/pages/detail_surah.dart';
 import 'package:equran_app/ui/pages/splash_screen_page.dart';
-import 'package:equran_app/utils/loading_dialog.dart';
 import 'package:equran_app/utils/utils_equran.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'models/surah_list.dart';
 
@@ -49,113 +49,136 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, String>> _allsurahs = [];
-  List<Map<String, String>> _filteredsurahs = [];
-  SurahList surahList = SurahList();
-
-  @override
-  void initState() {
-    super.initState();
-    _listSurah();
-  }
-
+  List<Data> _allsurahs = [];
+  List<Data> _filteredSurahs = []; // List for holding filtered data
   final TextEditingController _searchController = TextEditingController();
-  TextCapitalization textCapitalization = TextCapitalization.none;
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: const Text(
-            "E-Qur'an App",
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: Colors.white
-          ),
-        ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              controller: _searchController,
-              textCapitalization: textCapitalization,
-              keyboardType: TextInputType.text,
-              cursorColor: Colors.green, // Green cursor color
-              style: blackTextStyle.copyWith(
-                fontSize: 14,
-                fontWeight: medium,
+    return BlocProvider(
+      create: (context) => SurahBloc()..add(GetListSurah("surat")),
+      child: BlocBuilder<SurahBloc, SurahState>(
+        builder: (context, state) {
+          if (state is SurahLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.lightGreen),
+            );
+          } else if (state is SurahSuccess) {
+            _allsurahs = state.surah.data!;
+            if (_filteredSurahs.isEmpty) {
+              showToast("Data tidak ada!");
+              _filteredSurahs = _allsurahs;
+            }
+
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.green,
+                title: const Text(
+                  "E-Qur'an App",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search, color: greyColor),
-                hintText: "Cari nama surah atau arti surah",
-                hintStyle: greyTextStyle.copyWith(fontSize: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(),
+              body: Padding(
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _searchController,
+                      textCapitalization: TextCapitalization.none,
+                      keyboardType: TextInputType.text,
+                      cursorColor: Colors.green,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      onChanged: (text) {
+                        _filtersurahs(text); // Pass text to the filter function
+                      },
+                      decoration: InputDecoration(
+                        prefixIcon: Icon(Icons.search, color: Colors.grey),
+                        hintText: "Cari nama surah atau arti surah",
+                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(color: Colors.green),
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _filteredSurahs.length,
+                        itemBuilder: (context, index) {
+                          final surah = _filteredSurahs[index];
+                          return _buildSurahItem(
+                              surah.nomor.toString(),
+                              surah.namaLatin.toString(),
+                              surah.jumlahAyat.toString());
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  borderSide: BorderSide(color: Colors.green), // Green focused border color
+              ),
+            );
+          } else if (state is SurahFailed) {
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.green,
+                title: const Text(
+                  "E-Qur'an App",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
                 ),
-                contentPadding: const EdgeInsets.all(12),
-                filled: false,
-                fillColor: null,
+              ),
+              body: Center(
+                child: Text(
+                  state.e,
+                  style: const TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              ),
+            );
+          }
+
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.green,
+              title: const Text(
+                "E-Qur'an App",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _filteredsurahs.length,
-                itemBuilder: (context, index) {
-                  final surah = _filteredsurahs[index];
-                  return Column(
-                    children: [
-                      _buildSurahItem(surah['id']!, surah['name']!, surah['jumlah']!),
-                    ],
-                  );
-                },
-              ),
+            body: const Center(
+              child: Text("Something went wrong or data not available."),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  void _listSurah() async {
-    // CustomLoadingDialog().showLoadingDialog(context, title: "Load Surah", content: "Loading...");
-    List<Map<String, String>> allsurah = [];
-    String data = await EquranServices().hitEquran("surat");
-
-    try {
-      // CustomLoadingDialog().dismissLoadingDialog(context);
-      surahList = SurahList.fromJson(jsonDecode(data));
-
-      for (var item in surahList.data!) {
-        allsurah.add({'name': item.namaLatin.toString(), 'id': item.nomor.toString(), 'arti': item.arti.toString(), 'jumlah': item.jumlahAyat.toString(),  'audio': jsonEncode(item.audioFull).toString()});
-      }
-      setState(() {
-        _allsurahs = allsurah;
-        _filteredsurahs = _allsurahs;
-        _searchController.addListener(_filtersurahs);
-      });
-    } catch(e) {
-      // CustomLoadingDialog().dismissLoadingDialog(context);
-      showCustomSnackbar(context, e.toString());
-    }
-  }
-
-  void _filtersurahs() {
-    final query = _searchController.text.toLowerCase();
+  void _filtersurahs(String query) {
     setState(() {
-      _filteredsurahs = _allsurahs.where((surah) {
-        final nameLower = surah['name']!.toLowerCase();
-        final artiLower = surah['arti']!.toLowerCase();
-        return nameLower.contains(query) || artiLower.contains(query);
-      }).toList();
+      if (query.isEmpty) {
+        showToast("Data tidak ada!");
+        _filteredSurahs = _allsurahs;
+      } else {
+        _filteredSurahs = _allsurahs.where((surah) {
+          final nameLower = surah.nama!.toLowerCase();
+          final artiLower = surah.arti!.toLowerCase();
+          return nameLower.contains(query.toLowerCase()) ||
+              artiLower.contains(query.toLowerCase());
+        }).toList();
+      }
     });
   }
 

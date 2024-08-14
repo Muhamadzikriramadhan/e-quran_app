@@ -2,6 +2,7 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../shared/theme.dart';
 
@@ -20,6 +21,18 @@ void showCustomSnackbar(BuildContext context, String message) {
     backgroundColor: redColor,
     duration: const Duration(seconds: 3),
   ).show(context);
+}
+
+void showToast(String message) {
+  Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.black,
+      textColor: Colors.white,
+      fontSize: 16.0
+  );
 }
 
 class SearchableDialog extends StatefulWidget {
