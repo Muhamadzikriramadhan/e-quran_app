@@ -43,6 +43,8 @@ dependencies:
   cached_network_image: ^3.3.1
   lottie: ^1.2.1
   audioplayers: ^6.0.0
+  fluttertoast: ^8.2.6
+  local_auth: ^2.1.0
 
 dev_dependencies:
   flutter_test:
