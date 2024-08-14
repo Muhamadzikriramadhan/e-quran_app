@@ -4,7 +4,6 @@ import 'package:equran_app/blocs/surah/surah_bloc.dart';
 import 'package:equran_app/shared/theme.dart';
 import 'package:equran_app/ui/pages/detail_surah.dart';
 import 'package:equran_app/ui/pages/splash_screen_page.dart';
-import 'package:equran_app/utils/utils_equran.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -67,7 +66,6 @@ class _HomePageState extends State<HomePage> {
           } else if (state is SurahSuccess) {
             _allsurahs = state.surah.data!;
             if (_filteredSurahs.isEmpty) {
-              showToast("Data tidak ada!");
               _filteredSurahs = _allsurahs;
             }
 
@@ -169,7 +167,6 @@ class _HomePageState extends State<HomePage> {
   void _filtersurahs(String query) {
     setState(() {
       if (query.isEmpty) {
-        showToast("Data tidak ada!");
         _filteredSurahs = _allsurahs;
       } else {
         _filteredSurahs = _allsurahs.where((surah) {
