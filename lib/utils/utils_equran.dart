@@ -2,6 +2,7 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../shared/theme.dart';
@@ -14,8 +15,8 @@ void showCustomSnackbar(BuildContext context, String message) {
         color: Colors.white,
         fontSize: 16,
       ),
-      maxLines: 3, // Ensure text does not exceed three lines
-      overflow: TextOverflow.ellipsis, // Handle overflow
+      maxLines: 3,
+      overflow: TextOverflow.ellipsis,
     ),
     flushbarPosition: FlushbarPosition.TOP,
     backgroundColor: redColor,
@@ -35,129 +36,120 @@ void showToast(String message) {
   );
 }
 
-class SearchableDialog extends StatefulWidget {
+class SpinnerDialog {
+  final BuildContext context;
   final List<String> items;
+  final Function(String, int) onItemSelected;
   final String title;
+  List<String> filteredItems;
 
-  SearchableDialog({super.key, required this.items, required this.title});
+  SpinnerDialog({
+    required this.context,
+    required this.items,
+    required this.onItemSelected,
+    required this.title,
+  }) : filteredItems = items;
 
-  @override
-  _SearchableDialogState createState() => _SearchableDialogState(items: items, title: title);
+  void show() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          filteredItems = items
+                              .where((item) =>
+                              item.toLowerCase().contains(value.toLowerCase()))
+                              .toList();
+                        });
+                      },
+                      decoration: const InputDecoration(
+                      hintText: 'Cari',
+                      prefixIcon: Icon(Icons.search),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        return CustomListTile(
+                          title: filteredItems[index],
+                          onTap: () {
+                            int originalIndex = items.indexOf(filteredItems[index]);
+                            onItemSelected(filteredItems[index], originalIndex);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
-class _SearchableDialogState extends State<SearchableDialog> {
-  List<String> filteredItems = [];
-  final List<String> items;
+class CustomListTile extends StatelessWidget {
   final String title;
-  String? selectedItem; // Track the selected item
+  final VoidCallback onTap;
 
-  _SearchableDialogState({required this.items, required this.title});
-
-  @override
-  void initState() {
-    super.initState();
-    filteredItems.addAll(items);
-  }
-
-  void filterSearchResults(String query) {
-    if (query.isNotEmpty) {
-      List<String> dummyListData = [];
-      for (var item in items) {
-        if (item.toLowerCase().contains(query.toLowerCase())) {
-          dummyListData.add(item);
-        }
-      }
-      setState(() {
-        filteredItems.clear();
-        filteredItems.addAll(dummyListData);
-      });
-    } else {
-      setState(() {
-        filteredItems.clear();
-        filteredItems.addAll(items);
-      });
-    }
-  }
+  const CustomListTile({
+    Key? key,
+    required this.title,
+    required this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          TextField(
-            cursorColor: Colors.green,
-            onChanged: (value) {
-              filterSearchResults(value);
-            },
-            decoration: InputDecoration(
-              hintText: 'Cari',
-              prefixIcon: Icon(Icons.search), // Set prefix icon color
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.green),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.green),
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade300),
             ),
           ),
-          const SizedBox(height: 10.0),
-          Expanded(
-            child: ListView.builder(
-              itemCount: filteredItems.length,
-              itemBuilder: (BuildContext context, int index) {
-                return ListTile(
-                  leading: Radio<String>(
-                    value: filteredItems[index],
-                    groupValue: selectedItem,
-                    onChanged: (String? value) {
-                      setState(() {
-                        selectedItem = value;
-                      });
-                    },
-                    activeColor: Colors.green, // Set radio button color
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w500,
                   ),
-                  title: Text(filteredItems[index]),
-                  onTap: () {
-                    setState(() {
-                      selectedItem = filteredItems[index];
-                    });
-                  },
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-      actions: <Widget>[
-        TextButton(
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Colors.black)
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        TextButton(
-          child: const Text(
-              'Select',
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)
-          ),
-          onPressed: () {
-            Navigator.pop(context, {
-              'index': items.indexOf(selectedItem!),
-              'item': selectedItem,
-            });
-          },
-        ),
-      ],
     );
   }
 }
