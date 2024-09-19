@@ -20,8 +20,11 @@ this is the home layout list surah
 ![img.png](img.png)
 
 this is the ayat surah layout list ayah
-![img_1.png](img_1.png)
+![ayah.jpg](ayah.jpg)
 
 this is the tafsir surah layout list tafsir
 ![img_2.png](img_2.png)
+
+this is the list syeich to select
+![selectsyeich.jpg](selectsyeich.jpg)
  
