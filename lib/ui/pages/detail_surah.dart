@@ -288,13 +288,9 @@ class _DetailSurahPage extends State<DetailSurah> {
             context: context,
             items: listSyeikh,
             onItemSelected: (selected, index) {
+              int selectedIndex = index;
               setState(() {
-                setState(() {
-                  int selectedIndex = index;
-                  setState(() {
-                    voicer = selectedIndex +1;
-                  });
-                });
+                voicer = selectedIndex +1;
               });
             },
           ).show();
