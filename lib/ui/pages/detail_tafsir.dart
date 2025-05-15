@@ -17,90 +17,68 @@ class DetailTafsir extends StatefulWidget {
 }
 
 class _DetailTafsirPage extends State<DetailTafsir> {
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => DetailTafsirBloc()..add(DetailTafsirGetBySurahNumber("tafsir/${widget.id}")),
-      child: BlocBuilder<DetailTafsirBloc, DetailTafsirState>(
-        builder: (context, state) {
-          if (state is DetailTafsirLoading) {
-            return Container(
-              margin: const EdgeInsets.only(top: 30),
-              child: const Center(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        title: Text(
+          "Tafsir ${widget.name}",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+      body: BlocProvider(
+        create: (_) => DetailTafsirBloc()
+          ..add(DetailTafsirGetBySurahNumber("tafsir/${widget.id}")),
+        child: BlocBuilder<DetailTafsirBloc, DetailTafsirState>(
+          builder: (context, state) {
+            if (state is DetailTafsirLoading) {
+              return const Center(
                 child: CircularProgressIndicator(color: Colors.lightGreen),
-              ),
-            );
-          }
+              );
+            }
 
-          if (state is DetailTafsirSuccess) {
-            return Scaffold(
-              appBar: AppBar(
-                backgroundColor: Colors.green,
-                title: Text(
-                  "Tafsir ${widget.name}",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+            if (state is DetailTafsirSuccess) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(10.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildDetailRow("Surah", state.detailTafsir.data!.namaLatin!, isTitle: true),
+                    buildDetailRow("Arti", state.detailTafsir.data!.arti!),
+                    buildDetailRow("Jumlah ayat", "${state.detailTafsir.data!.jumlahAyat!} Ayat"),
+                    buildDetailRow("Tempat Turun", state.detailTafsir.data!.tempatTurun!),
+                    const SizedBox(height: 10),
+                    ..._buildTafsirList(state.detailTafsir.data!.tafsir!),
+                  ],
                 ),
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
-              body: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      buildDetailRow("Surah", state.detailTafsir.data!.namaLatin!, isTitle: true),
-                      buildDetailRow("Arti", state.detailTafsir.data!.arti!),
-                      buildDetailRow("Jumlah ayat", state.detailTafsir.data!.jumlahAyat!.toString() + " Ayat"),
-                      buildDetailRow("Tempat Turun", state.detailTafsir.data!.tempatTurun!),
-                      const SizedBox(height: 10),
-                      ..._buildTafsirList(state.detailTafsir.data!.tafsir!),
-                    ],
-                  ),
-                ),
-            ));
-          }
+              );
+            }
 
-          if (state is DetailTafsirFailed) {
-            return Scaffold(
-              appBar: AppBar(
-                backgroundColor: Colors.green,
-                title: Text(
-                  "Tafsir ${widget.name}",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-              body: Center(
+            if (state is DetailTafsirFailed) {
+              return Center(
                 child: Text(
                   state.e,
                   style: const TextStyle(color: Colors.red, fontSize: 16),
                 ),
-              ),
-            );
-          }
+              );
+            }
 
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.green,
-              title: Text(
-                "Surah ${widget.name}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
-            body: const Center(
+            return const Center(
               child: Text("Something went wrong or data not available."),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

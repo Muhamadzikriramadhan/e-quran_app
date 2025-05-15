@@ -45,6 +45,7 @@ dependencies:
   just_audio: ^0.9.40
   fluttertoast: ^8.2.6
   local_auth: ^2.1.0
+  icons_plus: ^5.0.0
 
 dev_dependencies:
   flutter_test:

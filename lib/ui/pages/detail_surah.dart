@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:equran_app/blocs/details/detail_bloc.dart';
 import 'package:equran_app/models/surah_detail.dart';
 import 'package:equran_app/ui/pages/detail_tafsir.dart';
@@ -60,191 +58,108 @@ class _DetailSurahPage extends State<DetailSurah> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-      DetailBloc()..add(DetailGetBySurahNumber("surat/${widget.id}")),
-      child: BlocBuilder<DetailBloc, DetailState>(
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.green,
+        title: Text(
+          "Surah ${widget.name}",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        actions: [
+          BlocBuilder<DetailBloc, DetailState>(
+            builder: (context, state) {
+              if (state is DetailSuccess) {
+                return IconButton(
+                  icon: Icon(isPlayingFull ? Icons.pause : Icons.play_arrow, color: Colors.white),
+                  onPressed: () async {
+                    final surah = state.details.data!.audioFull!;
+                    audioUrls = getVoiceFullUrl(surah);
+                    if (isPlayingFull) {
+                      await audioPlayer.pause();
+                      setState(() {
+                        isPlayingFull = false;
+                      });
+                    } else {
+                      _playIndicatorSound(audioUrls);
+                      // await audioPlayer.setUrl(audioUrls);
+                      // await audioPlayer.play();
+                      setState(() {
+                        isPlayingFull = true;
+                      });
+                    }
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onPressed: () {
+              _showMenu(context, widget.id, widget.name);
+            },
+          ),
+        ],
+      ),
+      body: BlocBuilder<DetailBloc, DetailState>(
         builder: (context, state) {
           if (state is DetailLoading) {
-            return Container(
-              margin: const EdgeInsets.only(top: 30),
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.lightGreen),
-              ),
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.lightGreen),
             );
           }
 
           if (state is DetailSuccess) {
-            return Scaffold(
-                appBar: AppBar(
-                  backgroundColor: Colors.green,
-                  title: Text(
-                    "Surah ${widget.name}",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                  actions: [
-                    IconButton(
-                      icon: Icon(isPlayingFull ? Icons.pause : Icons.play_arrow, color: Colors.white),
-                      onPressed: () async {
-                        audioUrls = ((voicer == 1)
-                            ? state.details.data!.audioFull?.s01.toString()
-                            : (voicer == 2)
-                            ? state.details.data!.audioFull?.s02.toString()
-                            : (voicer == 3)
-                            ? state.details.data!.audioFull?.s03.toString()
-                            : (voicer == 4)
-                            ? state.details.data!.audioFull?.s04.toString()
-                            : (voicer == 5)
-                            ? state.details.data!.audioFull?.s05.toString()
-                            : '')!;
-                        if (isPlayingFull) {
-                          await audioPlayer.pause();
-                          setState(() {
-                            isPlayingFull = false;
-                          });
-                        } else {
-                          _playIndicatorSound(audioUrls);
-                          // await audioPlayer.setUrl(audioUrls);
-                          // await audioPlayer.play();
-                          setState(() {
-                            isPlayingFull = true;
-                          });
-                        }
+            return Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: state.details.data!.ayat!.length,
+                      itemBuilder: (context, index) {
+                        final surah = state.details.data!.ayat![index];
+                        String voice = getVoiceUrl(surah); // separate logic
+                        return Column(
+                          children: [
+                            _buildSurahItem(
+                              surah.nomorAyat.toString(),
+                              surah.teksArab.toString(),
+                              surah.teksLatin.toString(),
+                              surah.teksIndonesia.toString(),
+                              voice,
+                            ),
+                            const Divider(),
+                          ],
+                        );
                       },
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.more_vert, color: Colors.white),
-                      onPressed: () {
-                        _showMenu(context, widget.id, widget.name);
-                      },
-                    ),
-                  ],
-                ),
-                body: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: state.details.data!.ayat!.length,
-                          itemBuilder: (context, index) {
-                            final surah = state.details.data!.ayat![index];
-                            String voice = (voicer == 1)
-                                ? surah.audio!.s01.toString()
-                                : (voicer == 2)
-                                ? surah.audio!.s02.toString()
-                                : (voicer == 3)
-                                ? surah.audio!.s03.toString()
-                                : (voicer == 4)
-                                ? surah.audio!.s04.toString()
-                                : (voicer == 5)
-                                ? surah.audio!.s05.toString()
-                                : '';
-                            return Column(
-                              children: [
-                                _buildSurahItem(
-                                  surah.nomorAyat.toString(),
-                                  surah.teksArab.toString(),
-                                  surah.teksLatin.toString(),
-                                  surah.teksIndonesia.toString(),
-                                  voice,
-                                ),
-                                const Divider(),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: StreamBuilder<PositionData>(
-                          stream: _positionDataStream,
-                          builder: (context, snapshot) {
-                            final positionData = snapshot.data;
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(_formatDuration(positionData?.position ?? Duration.zero)),
-                                Expanded(
-                                  child: SliderTheme(
-                                    data: SliderThemeData(
-                                      activeTrackColor: Colors.lightGreen,
-                                      inactiveTrackColor: Colors.grey,
-                                      thumbColor: Colors.green,
-                                      overlayColor: Colors.blue.withOpacity(0.2),
-                                      trackHeight: 4.0,
-                                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-                                    ),
-                                    child: Slider(
-                                      min: 0.0,
-                                      max: positionData?.duration.inMilliseconds.toDouble() ?? 1.0,
-                                      value: positionData == null
-                                          ? 0.0
-                                          : positionData.position.inMilliseconds > positionData.duration.inMilliseconds
-                                          ? positionData.duration.inMilliseconds.toDouble()
-                                          : positionData.position.inMilliseconds.toDouble(),
-                                      onChanged: (value) {
-                                        final newPosition = Duration(milliseconds: value.toInt());
-                                        audioPlayer.seek(newPosition);
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                Text(_formatDuration(positionData?.duration ?? Duration.zero)),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ],
                   ),
-                )
+                  buildAudioSlider(),
+                ],
+              ),
             );
           }
 
           if (state is DetailFailed) {
-            return Scaffold(
-              appBar: AppBar(
-                backgroundColor: Colors.green,
-                title: Text(
-                  "Surah ${widget.name}",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white
-                  ),
-                ),
-              ),
-              body: Center(
-                child: Text(
-                  state.e,
-                  style: const TextStyle(color: Colors.red, fontSize: 16),
-                ),
+            return Center(
+              child: Text(
+                state.e,
+                style: const TextStyle(color: Colors.red),
               ),
             );
           }
 
-          return Scaffold(
-            appBar: AppBar(
-              backgroundColor: Colors.green,
-              title: Text(
-                "Surah ${widget.name}",
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
-            body: const Center(
-              child: Text("Something went wrong or data not available."),
-            ),
-          );
+          return const Center(child: Text("Something went wrong."));
         },
       ),
     );
@@ -421,6 +336,80 @@ class _DetailSurahPage extends State<DetailSurah> {
     }
 
     return arabicNumber;
+  }
+
+  String getVoiceUrl(Ayat surah) {
+    String voice = (voicer == 1)
+        ? surah.audio!.s01.toString()
+        : (voicer == 2)
+        ? surah.audio!.s02.toString()
+        : (voicer == 3)
+        ? surah.audio!.s03.toString()
+        : (voicer == 4)
+        ? surah.audio!.s04.toString()
+        : (voicer == 5)
+        ? surah.audio!.s05.toString()
+        : '';
+    return voice;
+  }
+
+  String getVoiceFullUrl(AudioFullSurahDetail surah) {
+    String voice = (voicer == 1)
+        ? surah.s01.toString()
+        : (voicer == 2)
+        ? surah.s02.toString()
+        : (voicer == 3)
+        ? surah.s03.toString()
+        : (voicer == 4)
+        ? surah.s04.toString()
+        : (voicer == 5)
+        ? surah.s05.toString()
+        : '';
+    return voice;
+  }
+
+  Widget buildAudioSlider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: StreamBuilder<PositionData>(
+        stream: _positionDataStream,
+        builder: (context, snapshot) {
+          final positionData = snapshot.data;
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(_formatDuration(positionData?.position ?? Duration.zero)),
+              Expanded(
+                child: SliderTheme(
+                  data: SliderThemeData(
+                    activeTrackColor: Colors.lightGreen,
+                    inactiveTrackColor: Colors.grey,
+                    thumbColor: Colors.green,
+                    overlayColor: Colors.blue.withOpacity(0.2),
+                    trackHeight: 4.0,
+                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+                  ),
+                  child: Slider(
+                    min: 0.0,
+                    max: positionData?.duration.inMilliseconds.toDouble() ?? 1.0,
+                    value: positionData == null
+                        ? 0.0
+                        : positionData.position.inMilliseconds > positionData.duration.inMilliseconds
+                        ? positionData.duration.inMilliseconds.toDouble()
+                        : positionData.position.inMilliseconds.toDouble(),
+                    onChanged: (value) {
+                      final newPosition = Duration(milliseconds: value.toInt());
+                      audioPlayer.seek(newPosition);
+                    },
+                  ),
+                ),
+              ),
+              Text(_formatDuration(positionData?.duration ?? Duration.zero)),
+            ],
+          );
+        },
+      ),
+    );
   }
 
 }

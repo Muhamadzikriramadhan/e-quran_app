@@ -31,7 +31,7 @@ class Data {
   String? tempatTurun;
   String? arti;
   String? deskripsi;
-  AudioFull? audioFull;
+  AudioFullSurahDetail? audioFull;
   List<Ayat>? ayat;
   dynamic? suratSelanjutnya;
   dynamic? suratSebelumnya;
@@ -58,7 +58,7 @@ class Data {
     arti = json['arti'];
     deskripsi = json['deskripsi'];
     audioFull = json['audioFull'] != null
-        ? new AudioFull.fromJson(json['audioFull'])
+        ? new AudioFullSurahDetail.fromJson(json['audioFull'])
         : null;
     if (json['ayat'] != null) {
       ayat = <Ayat>[];
@@ -114,16 +114,16 @@ class Data {
   }
 }
 
-class AudioFull {
+class AudioFullSurahDetail {
   String? s01;
   String? s02;
   String? s03;
   String? s04;
   String? s05;
 
-  AudioFull({this.s01, this.s02, this.s03, this.s04, this.s05});
+  AudioFullSurahDetail({this.s01, this.s02, this.s03, this.s04, this.s05});
 
-  AudioFull.fromJson(Map<String, dynamic> json) {
+  AudioFullSurahDetail.fromJson(Map<String, dynamic> json) {
     s01 = json['01'];
     s02 = json['02'];
     s03 = json['03'];
@@ -147,7 +147,7 @@ class Ayat {
   String? teksArab;
   String? teksLatin;
   String? teksIndonesia;
-  AudioFull? audio;
+  AudioFullSurahDetail? audio;
 
   Ayat(
       {this.nomorAyat,
@@ -161,7 +161,7 @@ class Ayat {
     teksArab = json['teksArab'];
     teksLatin = json['teksLatin'];
     teksIndonesia = json['teksIndonesia'];
-    audio = json['audio'] != null ? new AudioFull.fromJson(json['audio']) : null;
+    audio = json['audio'] != null ? new AudioFullSurahDetail.fromJson(json['audio']) : null;
   }
 
   Map<String, dynamic> toJson() {
