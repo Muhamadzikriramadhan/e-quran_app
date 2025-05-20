@@ -28,3 +28,10 @@ this is the tafsir surah layout list tafsir
 this is the list syeich to select
 ![selectsyeich.jpg](selectsyeich.jpg)
  
+add new feature that is asmaul husna, dhikir, dhu'a
+![img_3.png](img_3.png)
+
+
+thanks for open api :
+- https://equran.id/apidev/v2
+- https://muslim-api-three.vercel.app/

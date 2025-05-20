@@ -6,6 +6,7 @@ import 'package:equran_app/ui/pages/asmaul_husna_page.dart';
 import 'package:equran_app/ui/pages/detail_surah.dart';
 import 'package:equran_app/ui/pages/doa_page.dart';
 import 'package:equran_app/ui/pages/splash_screen_page.dart';
+import 'package:equran_app/ui/pages/zikir_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:icons_plus/icons_plus.dart';
@@ -116,6 +117,48 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               }
+              if (value == 'zikir') {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const ZikirPage(url: ""),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+                      var tween = Tween(begin: begin, end: end)
+                          .chain(CurveTween(curve: curve));
+                      return SlideTransition(
+                        position: animation.drive(tween),
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              }
+              if (value == 'zikirme') {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                      const ZikirPage(url: "pagi"),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+                      var tween = Tween(begin: begin, end: end)
+                          .chain(CurveTween(curve: curve));
+                      return SlideTransition(
+                        position: animation.drive(tween),
+                        child: child,
+                      );
+                    },
+                  ),
+                );
+              }
             },
             itemBuilder: (BuildContext context) => [
               const PopupMenuItem<String>(
@@ -134,7 +177,7 @@ class _HomePageState extends State<HomePage> {
                   children: const [
                     Icon(FontAwesome.person_praying_solid, color: Colors.black54),
                     SizedBox(width: 8),
-                    Text('Do\'a'),
+                    Text('Kumpulan Do\'a'),
                   ],
                 ),
               ),
@@ -144,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                   children: const [
                     Icon(Bootstrap.book, color: Colors.black54),
                     SizedBox(width: 8),
-                    Text('Zikir'),
+                    Text('Kumpulan Zikir'),
                   ],
                 ),
               ),

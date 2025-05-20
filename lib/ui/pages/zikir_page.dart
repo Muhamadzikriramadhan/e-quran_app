@@ -4,18 +4,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:icons_plus/icons_plus.dart';
 
-import '../../blocs/doa/doa_bloc.dart';
-import '../../models/doa_list.dart';
+import '../../blocs/zikir/zikir_bloc.dart';
+import '../../models/zikir_list.dart';
 
-class DoaPage extends StatefulWidget {
+class ZikirPage extends StatefulWidget {
+
+  final String url;
+
+  const ZikirPage({super.key, required this.url});
 
   @override
-  State<DoaPage> createState() => _DoaPageState();
+  State<ZikirPage> createState() => _ZikirPageState();
 }
 
-class _DoaPageState extends State<DoaPage> {
-  List<Data> _alldoas = [];
-  List<Data> _filtereddoas = [];
+class _ZikirPageState extends State<ZikirPage> {
+  List<Data> _allZikirs = [];
+  List<Data> _filteredZikirs = [];
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -24,27 +28,29 @@ class _DoaPageState extends State<DoaPage> {
       appBar: AppBar(
         backgroundColor: Colors.green,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Doa",
-          style: TextStyle(
+        title: Text(
+          "Zikir ${widget.url.isEmpty ? "Sehari - Hari" : "Pagi & Sore"}",
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
         ),
       ),
       body: BlocProvider(
-        create: (_) => DoaBloc()..add(GetDoa("doa")),
-        child: BlocBuilder<DoaBloc, DoaState>(
+        create: (_) => ZikirBloc()..add(
+            GetZikir(widget.url.isEmpty ? "dzikir" : "dzikir?type=${widget.url}")
+        ),
+        child: BlocBuilder<ZikirBloc, ZikirState>(
           builder: (context, state) {
-            if (state is DoaLoading) {
+            if (state is ZikirLoading) {
               return const Center(
                 child: CircularProgressIndicator(color: Colors.lightGreen),
               );
             }
 
-            if (state is DoaSuccess) {
-              _alldoas = state.doaList.data!;
-              _filtereddoas = _alldoas;
+            if (state is ZikirSuccess) {
+              _allZikirs = state.zikirList.data!;
+              _filteredZikirs = _allZikirs;
 
               return Padding(
                 padding: const EdgeInsets.all(10),
@@ -64,11 +70,11 @@ class _DoaPageState extends State<DoaPage> {
                               fontWeight: FontWeight.w500,
                             ),
                             onChanged: (text) {
-                              _filterdoas(text);
+                              _filterZikirs(text);
                             },
                             decoration: InputDecoration(
                               prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                              hintText: "Cari nama, judul atau arti doa",
+                              hintText: "Cari jenis, judul atau arti zikir",
                               hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -81,46 +87,44 @@ class _DoaPageState extends State<DoaPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
-
-                        // ✅ Filter icon + popup options
-                        PopupMenuButton<String>(
-                          onSelected: (value) {
-                            _searchController.clear(); // ✅ Clear search
-                            context.read<DoaBloc>().add(GetDoa('doa?source=$value'));
-                          },
-                          itemBuilder: (context) => [
-                            for (var option in ['quran', 'hadits', 'pilihan', 'harian', 'ibadah', 'haji', 'lainnya'])
-                              PopupMenuItem(value: option, child: Text(option.toUpperCase())),
-                          ],
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.green,
-                              borderRadius: BorderRadius.circular(12),
+                        if (widget.url.isNotEmpty) ...[
+                          const SizedBox(width: 10),
+                          PopupMenuButton<String>(
+                            onSelected: (value) {
+                              _searchController.clear();
+                              context.read<ZikirBloc>().add(GetZikir('dzikir?ype=$value'));
+                            },
+                            itemBuilder: (context) => [
+                              for (var option in ['pagi', 'sore'])
+                                PopupMenuItem(value: option, child: Text(option.toUpperCase())),
+                            ],
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                AntDesign.filter_outline,
+                                color: Colors.white,
+                                size: 23,
+                              ),
                             ),
-                            child: const Icon(
-                              AntDesign.filter_outline,
-                              color: Colors.white,
-                              size: 23,
-                            ),
-                          ),
-                        ),
+                          )
+                        ]
                       ],
                     ),
-
                     const SizedBox(height: 10),
-
-                    // ✅ Doa list view
                     Expanded(
                       child: ListView.builder(
-                        itemCount: _filtereddoas.length,
+                        itemCount: _filteredZikirs.length,
                         itemBuilder: (context, index) {
-                          final doa = _filtereddoas[index];
-                          return _builddoaItem(
-                            doa.judul.toString(),
-                            doa.indo.toString(),
-                            doa.arab.toString(),
+                          final zikir = _filteredZikirs[index];
+                          return _buildZikirItem(
+                            zikir.type.toString() ,
+                            zikir.ulang.toString(),
+                            zikir.indo.toString(),
+                            zikir.arab.toString(),
                           );
                         },
                       ),
@@ -130,7 +134,7 @@ class _DoaPageState extends State<DoaPage> {
               );
             }
 
-            if (state is DoaFailed) {
+            if (state is ZikirFailed) {
               return Center(
                 child: Text(
                   state.e,
@@ -148,17 +152,16 @@ class _DoaPageState extends State<DoaPage> {
     );
   }
 
-  void _filterdoas(String keyword) {
+  void _filterZikirs(String keyword) {
     setState(() {
-      _filtereddoas = _alldoas.where((doa) {
+      _filteredZikirs = _allZikirs.where((zikir) {
         final lower = keyword.toLowerCase();
-        return doa.judul!.toLowerCase().contains(lower) ||
-            doa.indo!.toLowerCase().contains(lower);
+        return zikir.indo!.toLowerCase().contains(lower) || zikir.type!.toLowerCase().contains(lower);
       }).toList();
     });
   }
 
-  Widget _builddoaItem(String latin, String arti, String arab) {
+  Widget _buildZikirItem(String type, String ulang, String arti, String arab) {
     return Container(
       padding: const EdgeInsets.all(12.0),
       margin: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 8.0),
@@ -177,13 +180,26 @@ class _DoaPageState extends State<DoaPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            latin,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              fontSize: 16.0,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                ulang,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontSize: 16.0,
+                ),
+              ),
+              Text(
+                capitalizeFirst(type),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontSize: 16.0,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           Align(
@@ -212,5 +228,11 @@ class _DoaPageState extends State<DoaPage> {
       ),
     );
   }
+
+  String capitalizeFirst(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
 
 }
