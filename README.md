@@ -1,37 +1,62 @@
-# equran_app
+# 📖 E-Qur'an App
 
-A new Flutter project.
+A modern Flutter application for accessing and studying the Qur'an with useful Islamic features.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✨ Features
 
-A few resources to get you started if this is your first Flutter project:
+- 📚 List of Surahs with details
+- 🧾 Read Ayahs of each Surah
+- 📖 View Tafsir (interpretation) for each Surah
+- 🎙 Select and listen to recitations from different Sheikhs
+- 🕌 Access **Asmaul Husna**, **Dhikir**, and **Du'a**
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📸 Screenshots
 
-E-Qur'an App
-this is the home layout list surah
-![img.png](img.png)
+### 🏠 Home Layout - List of Surahs
+![Home Layout](img.png)
 
-this is the ayat surah layout list ayah
-![ayah.jpg](ayah.jpg)
+### 📜 Ayah Layout - List of Verses
+![Ayah Layout](ayah.jpg)
 
-this is the tafsir surah layout list tafsir
-![img_2.png](img_2.png)
+### 📖 Tafsir Layout - Interpretations
+![Tafsir Layout](img_2.png)
 
-this is the list syeich to select
-![selectsyeich.jpg](selectsyeich.jpg)
- 
-add new feature that is asmaul husna, dhikir, dhu'a
-![img_3.png](img_3.png)
+### 🎧 Sheikh Selection
+![Select Sheikh](selectsyeich.jpg)
 
+### 🌟 New Features: Asmaul Husna, Dhikir, Du'a
+![New Features](img_3.png)
 
-thanks for open api :
-- https://equran.id/apidev/v2
-- https://muslim-api-three.vercel.app/
+---
+
+## 🚀 Getting Started
+
+This project is a starting point for a Flutter application. To get started:
+
+1. Install Flutter from [flutter.dev](https://flutter.dev)
+2. Clone this repository
+3. Run `flutter pub get`
+4. Launch using `flutter run`
+
+---
+
+## 📡 Powered By Public APIs
+
+- 📘 [equran.id API](https://equran.id/apidev/v2)
+- 🌙 [Muslim API](https://muslim-api-three.vercel.app/)
+
+---
+
+## 📚 Resources
+
+- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Flutter Cookbook](https://docs.flutter.dev/cookbook)
+- [Flutter Documentation](https://docs.flutter.dev/)
+
+---
+
+> Thank you for using E-Qur'an App. May it benefit your spiritual journey. 🌙
