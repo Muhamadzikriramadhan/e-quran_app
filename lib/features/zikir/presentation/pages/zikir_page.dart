@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:icons_plus/icons_plus.dart';
 
 import '../../domain/entities/zikir_entity.dart';
 import '../bloc/zikir_bloc.dart';
@@ -26,14 +25,8 @@ class _ZikirPageState extends State<ZikirPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
-        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           "Zikir ${widget.url.isEmpty ? "Sehari - Hari" : "Pagi & Sore"}",
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
         ),
       ),
       body: BlocProvider(
@@ -43,8 +36,8 @@ class _ZikirPageState extends State<ZikirPage> {
         child: BlocBuilder<ZikirBloc, ZikirState>(
           builder: (context, state) {
             if (state is ZikirLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.lightGreen),
+              return Center(
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
               );
             }
 
@@ -64,7 +57,7 @@ class _ZikirPageState extends State<ZikirPage> {
                             controller: _searchController,
                             textCapitalization: TextCapitalization.none,
                             keyboardType: TextInputType.text,
-                            cursorColor: Colors.green,
+                            cursorColor: Theme.of(context).primaryColor,
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -77,11 +70,11 @@ class _ZikirPageState extends State<ZikirPage> {
                               hintText: "Cari jenis, judul atau arti zikir",
                               hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
+                                  borderRadius: BorderRadius.circular(14),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(14),
-                                borderSide: const BorderSide(color: Colors.green),
+                                borderSide: BorderSide(color: Theme.of(context).primaryColor),
                               ),
                               contentPadding: const EdgeInsets.all(12),
                             ),
@@ -101,11 +94,11 @@ class _ZikirPageState extends State<ZikirPage> {
                             child: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.green,
+                                color: Theme.of(context).primaryColor,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
-                                AntDesign.filter_outline,
+                                Icons.filter_list_rounded,
                                 color: Colors.white,
                                 size: 23,
                               ),

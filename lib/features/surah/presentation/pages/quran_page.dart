@@ -38,110 +38,99 @@ class _QuranPageState extends State<QuranPage> {
     return Scaffold(
       backgroundColor: lightBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "Al-Qur'an",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        centerTitle: true,
+        title: const Text("Al-Qur'an"),
       ),
-      body: BlocProvider.value(
-        value: _surahBloc,
-        child: BlocBuilder<SurahBloc, SurahState>(
-          builder: (context, state) {
-            if (state is SurahLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.lightGreen),
-              );
-            } else if (state is SurahSuccess) {
-              final allSurahs = state.surah.data ?? [];
-              final query = _searchController.text.toLowerCase();
-              
-              final displaySurahs = query.isEmpty
-                  ? allSurahs
-                  : allSurahs.where((surah) {
-                      final nameLower = (surah.namaLatin ?? "").toLowerCase();
-                      final artiLower = (surah.arti ?? "").toLowerCase();
-                      return nameLower.contains(query) || artiLower.contains(query);
-                    }).toList();
-
-              return Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: _searchController,
-                      textCapitalization: TextCapitalization.none,
-                      keyboardType: TextInputType.text,
-                      cursorColor: Colors.green,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      onChanged: (text) {
-                        setState(() {}); // Rebuild to apply search filter locally
-                      },
-                      decoration: InputDecoration(
-                        fillColor: Colors.white,
-                        filled: true,
-                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                        hintText: "Cari nama surah atau arti surah",
-                        hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+      body: IslamicBackground(
+        child: BlocProvider.value(
+          value: _surahBloc,
+          child: BlocBuilder<SurahBloc, SurahState>(
+            builder: (context, state) {
+              if (state is SurahLoading) {
+                return Center(
+                  child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                );
+              } else if (state is SurahSuccess) {
+                final allSurahs = state.surah.data ?? [];
+                final query = _searchController.text.toLowerCase();
+                
+                final displaySurahs = query.isEmpty
+                    ? allSurahs
+                    : allSurahs.where((surah) {
+                        final nameLower = (surah.namaLatin ?? "").toLowerCase();
+                        final artiLower = (surah.arti ?? "").toLowerCase();
+                        return nameLower.contains(query) || artiLower.contains(query);
+                      }).toList();
+  
+                return Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _searchController,
+                        textCapitalization: TextCapitalization.none,
+                        keyboardType: TextInputType.text,
+                        cursorColor: Theme.of(context).primaryColor,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide(color: Colors.grey.shade200),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Colors.green),
-                        ),
-                        contentPadding: const EdgeInsets.all(12),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: displaySurahs.length,
-                        itemBuilder: (context, index) {
-                          final surah = displaySurahs[index];
-                          return _buildSurahItem(
-                            surah.nomor.toString(),
-                            surah.namaLatin.toString(),
-                            surah.jumlahAyat.toString(),
-                            surah.tempatTurun.toString(),
-                          );
+                        onChanged: (text) {
+                          setState(() {}); // Rebuild to apply search filter locally
                         },
+                        decoration: InputDecoration(
+                          fillColor: Colors.white,
+                          filled: true,
+                          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                          hintText: "Cari nama surah atau arti surah",
+                          hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Colors.grey.shade200),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                          ),
+                          contentPadding: const EdgeInsets.all(12),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            } else if (state is SurahFailed) {
-              return Center(
-                child: Text(
-                  state.e,
-                  style: const TextStyle(color: Colors.red, fontSize: 16),
-                ),
-              );
-            } else {
-              return const Center(
-                child: Text("Something went wrong or data not available."),
-              );
-            }
-          },
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: displaySurahs.length,
+                          itemBuilder: (context, index) {
+                            final surah = displaySurahs[index];
+                            return _buildSurahItem(
+                              surah.nomor.toString(),
+                              surah.namaLatin.toString(),
+                              surah.jumlahAyat.toString(),
+                              surah.tempatTurun.toString(),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              } else if (state is SurahFailed) {
+                return Center(
+                  child: Text(
+                    state.e,
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                  ),
+                );
+              } else {
+                return const Center(
+                  child: Text("Something went wrong or data not available."),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
@@ -194,7 +183,7 @@ class _QuranPageState extends State<QuranPage> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.lightGreen,
+                  backgroundColor: Theme.of(context).primaryColor,
                   child: Text(
                     id,
                     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

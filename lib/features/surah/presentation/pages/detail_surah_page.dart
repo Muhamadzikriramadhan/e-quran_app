@@ -5,7 +5,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../../core/theme/theme.dart';
-import '../../../../core/utils/utils_equran.dart';
 import '../../domain/entities/surah_entity.dart';
 import '../../domain/entities/surah_detail_entity.dart';
 import '../bloc/detail_bloc/detail_bloc.dart';
@@ -61,22 +60,9 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
     return Scaffold(
       backgroundColor: lightBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         title: Text(
           "Surah ${widget.name}",
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        centerTitle: true,
         actions: [
           BlocBuilder<DetailBloc, DetailState>(
             builder: (context, state) {
@@ -86,7 +72,7 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
                 }
                 final isFullPlaying = isPlayingFull && _isAudioPlaying && _playingAyatIndex == null;
                 return IconButton(
-                  icon: Icon(isFullPlaying ? Icons.pause : Icons.play_arrow, color: Colors.black87),
+                  icon: Icon(isFullPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white),
                   onPressed: () async {
                     final surah = state.details.data!.audioFull!;
                     audioUrls = getVoiceFullUrl(surah);
@@ -111,76 +97,75 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
               return const SizedBox.shrink();
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.black87),
-            onPressed: () {
-              _showMenu(context, widget.id, widget.name);
-            },
-          ),
         ],
       ),
-      body: BlocBuilder<DetailBloc, DetailState>(
-        builder: (context, state) {
-          if (state is DetailLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.lightGreen),
-            );
-          }
-
-          if (state is DetailSuccess) {
-            return Column(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: ListView.builder(
-                      itemCount: state.details.data!.ayat!.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return _buildSurahHeaderCard(state.details.data!);
-                        }
-
-                        final ayatIndex = index - 1;
-                        final surah = state.details.data!.ayat![ayatIndex];
-                        String voice = getVoiceUrl(surah);
-                        return _buildSurahItem(
-                          surah.nomorAyat.toString(),
-                          surah.teksArab.toString(),
-                          surah.teksLatin.toString(),
-                          surah.teksIndonesia.toString(),
-                          voice,
-                          ayatIndex,
-                        );
-                      },
+      body: IslamicBackground(
+        child: BlocBuilder<DetailBloc, DetailState>(
+          builder: (context, state) {
+            if (state is DetailLoading) {
+              return Center(
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+              );
+            }
+  
+            if (state is DetailSuccess) {
+              return Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: ListView.builder(
+                        itemCount: state.details.data!.ayat!.length + 2,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return _buildSurahHeaderCard(state.details.data!);
+                          }
+                          if (index == 1) {
+                            return _buildSyeikhSelectorCard();
+                          }
+  
+                          final ayatIndex = index - 2;
+                          final surah = state.details.data!.ayat![ayatIndex];
+                          String voice = getVoiceUrl(surah);
+                          return _buildSurahItem(
+                            surah.nomorAyat.toString(),
+                            surah.teksArab.toString(),
+                            surah.teksLatin.toString(),
+                            surah.teksIndonesia.toString(),
+                            voice,
+                            ayatIndex,
+                          );
+                        },
+                      ),
                     ),
                   ),
+                  buildAudioSlider(),
+                ],
+              );
+            }
+  
+            if (state is DetailFailed) {
+              return Center(
+                child: Text(
+                  state.e,
+                  style: const TextStyle(color: Colors.red),
                 ),
-                buildAudioSlider(),
-              ],
-            );
-          }
-
-          if (state is DetailFailed) {
-            return Center(
-              child: Text(
-                state.e,
-                style: const TextStyle(color: Colors.red),
-              ),
-            );
-          }
-
-          return const Center(child: Text("Something went wrong."));
-        },
+              );
+            }
+  
+            return const Center(child: Text("Something went wrong."));
+          },
+        ),
       ),
     );
   }
 
   Widget _buildSurahHeaderCard(SurahDetailDataEntity data) {
     return Container(
-      margin: const EdgeInsets.only(top: 10, bottom: 16, left: 4, right: 4),
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.only(top: 8, bottom: 8, left: 4, right: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
           colors: [Color(0xff11998e), Color(0xff38ef7d)],
           begin: Alignment.topLeft,
@@ -189,9 +174,9 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
         boxShadow: [
           BoxShadow(
             color: const Color(0xff11998e).withOpacity(0.25),
-            blurRadius: 10,
+            blurRadius: 8,
             spreadRadius: 1,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -200,42 +185,85 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
           Text(
             data.namaLatin ?? "",
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             data.arti ?? "",
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               color: Colors.white.withOpacity(0.85),
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
             height: 1,
-            width: 150,
+            width: 120,
             color: Colors.white.withOpacity(0.3),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             "${(data.tempatTurun ?? "").toUpperCase()} • ${(data.jumlahAyat ?? 0)} AYAT",
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              letterSpacing: 1.5,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Beautiful elevated button to view Tafsir
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => DetailTafsirPage(
+                    id: widget.id,
+                    name: widget.name,
+                  ),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    return SlideTransition(
+                      position: animation.drive(tween),
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+            icon: const Icon(Icons.menu_book, size: 14, color: Color(0xff11998e)),
+            label: const Text(
+              "Tafsir Surat",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xff11998e),
+                fontSize: 12,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xff11998e),
+              elevation: 1.5,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
           ),
           if (widget.id != "1" && widget.id != "9") ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Text(
               "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
               style: GoogleFonts.notoSansArabic(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -247,80 +275,92 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
     );
   }
 
-  void _showMenu(BuildContext context, String id, String name) {
-    final RenderBox renderBox = context.findRenderObject() as RenderBox;
-    final size = renderBox.size;
+  Widget _buildSyeikhSelectorCard() {
+    final List<String> listSyeikh = [
+      'Abdullah Al-Juhany',
+      'Abdul Muhsin Al-Qasim',
+      'Abdurrahman as-Sudais',
+      'Ibrahim Al-Dossari',
+      'Misyari Rasyid Al-Afasi',
+    ];
 
-    showMenu(
-      context: context,
-      position: RelativeRect.fromLTRB(size.width - 100, 0, 0, 0),
-      items: <PopupMenuItem<String>>[
-        const PopupMenuItem<String>(
-          value: '1',
-          child: Text('Pilih Murotal Syeikh'),
-        ),
-        const PopupMenuItem<String>(
-          value: '2',
-          child: Row(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
             children: [
-              Icon(Icons.menu_book, color: Colors.lightGreen),
-              SizedBox(width: 10),
-              Text('Tafsir Surat'),
+              Icon(
+                Icons.record_voice_over_rounded,
+                color: Theme.of(context).primaryColor,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Pilih Qari",
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: blackColor,
+                ),
+              ),
             ],
           ),
-        ),
-      ],
-    ).then((value) async {
-      if (value != null) {
-        if (value == '1') {
-          List<String> listSyeikh = [
-            'Abdullah-Al-Juhany',
-            'Abdul-Muhsin-Al-Qasim',
-            'Abdurrahman-as-Sudais',
-            'Ibrahim-Al-Dossari',
-            'Misyari-Rasyid-Al-Afasi',
-          ];
-          if (!context.mounted) return;
-          SpinnerDialog(
-            title: 'Silahkan Pilih Syeikh',
-            context: context,
-            items: listSyeikh,
-            onItemSelected: (selected, index) async {
-              int selectedIndex = index;
-              await audioPlayer.stop(); // Stop currently playing audio on qori change
-              setState(() {
-                voicer = selectedIndex + 1;
-                _playingAyatIndex = null;
-                isPlayingFull = false;
-              });
-            },
-          ).show();
-        } else {
-          if (!context.mounted) return;
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => DetailTafsirPage(
-                id: id,
-                name: name,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: Theme.of(context).primaryColor.withOpacity(0.2),
+                width: 1,
               ),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                const begin = Offset(1.0, 0.0);
-                const end = Offset.zero;
-                const curve = Curves.easeInOut;
-
-                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-                return SlideTransition(
-                  position: animation.drive(tween),
-                  child: child,
-                );
-              },
             ),
-          );
-        }
-      }
-    });
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: voicer,
+                icon: Icon(Icons.arrow_drop_down, color: Theme.of(context).primaryColor),
+                elevation: 2,
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+                onChanged: (int? newValue) async {
+                  if (newValue != null && newValue != voicer) {
+                    await audioPlayer.stop();
+                    setState(() {
+                      voicer = newValue;
+                      _playingAyatIndex = null;
+                      isPlayingFull = false;
+                    });
+                  }
+                },
+                items: List.generate(listSyeikh.length, (index) {
+                  return DropdownMenuItem<int>(
+                    value: index + 1,
+                    child: Text(listSyeikh[index]),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Stream<PositionData> get _positionDataStream =>
@@ -341,8 +381,8 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
     final bool isThisPlaying = _playingAyatIndex == index && _isAudioPlaying;
 
     return Container(
-      padding: const EdgeInsets.all(16.0),
-      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+      margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.0),
@@ -362,25 +402,25 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   "${widget.name} : $id",
-                  style: const TextStyle(
-                    color: Colors.green,
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                    fontSize: 11,
                   ),
                 ),
               ),
               IconButton(
                 icon: Icon(
                   isThisPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                  color: Colors.green,
-                  size: 32,
+                  color: Theme.of(context).primaryColor,
+                  size: 30,
                 ),
                 onPressed: () async {
                   if (isThisPlaying) {
@@ -402,7 +442,7 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
             child: Text(
@@ -417,17 +457,17 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
               textDirection: TextDirection.rtl,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             arabLatin,
             style: TextStyle(
               fontSize: 14.0,
-              color: Colors.green.shade700,
+              color: Theme.of(context).primaryColor,
               fontStyle: FontStyle.italic,
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             arti,
             style: TextStyle(
@@ -525,7 +565,7 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
           children: [
             Row(
               children: [
-                const Icon(Icons.music_note, color: Colors.green),
+                Icon(Icons.music_note, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -552,7 +592,7 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
                 IconButton(
                   icon: Icon(
                     _isAudioPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                    color: Colors.green,
+                    color: Theme.of(context).primaryColor,
                     size: 36,
                   ),
                   onPressed: () async {
@@ -587,10 +627,10 @@ class _DetailSurahPageState extends State<DetailSurahPage> {
                   children: [
                     SliderTheme(
                       data: SliderThemeData(
-                        activeTrackColor: Colors.green,
+                        activeTrackColor: Theme.of(context).primaryColor,
                         inactiveTrackColor: Colors.grey.shade200,
-                        thumbColor: Colors.green,
-                        overlayColor: Colors.green.withOpacity(0.2),
+                        thumbColor: Theme.of(context).primaryColor,
+                        overlayColor: Theme.of(context).primaryColor.withOpacity(0.2),
                         trackHeight: 4.0,
                         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
                       ),

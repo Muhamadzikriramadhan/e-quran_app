@@ -23,23 +23,15 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          "Asmaul Husna",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        title: const Text("Asmaul Husna"),
       ),
       body: BlocProvider(
         create: (_) => AsmaulHusnaBloc()..add(const GetAsmaulHusna("quran/asma")),
         child: BlocBuilder<AsmaulHusnaBloc, AsmaulHusnaState>(
           builder: (context, state) {
             if (state is AsmaulHusnaLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.lightGreen),
+              return Center(
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
               );
             }
 
@@ -58,7 +50,7 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
                       controller: _searchController,
                       textCapitalization: TextCapitalization.none,
                       keyboardType: TextInputType.text,
-                      cursorColor: Colors.green,
+                      cursorColor: Theme.of(context).primaryColor,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -75,7 +67,7 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
-                          borderSide: const BorderSide(color: Colors.green),
+                          borderSide: BorderSide(color: Theme.of(context).primaryColor),
                         ),
                         contentPadding: const EdgeInsets.all(12),
                       ),
@@ -153,7 +145,7 @@ class _AsmaulHusnaPageState extends State<AsmaulHusnaPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            backgroundColor: Colors.lightGreen,
+            backgroundColor: Theme.of(context).primaryColor,
             child: Text(
               id,
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

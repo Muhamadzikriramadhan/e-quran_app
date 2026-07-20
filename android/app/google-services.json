@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "560718730308",
+    "project_id": "e-qur-an-app",
+    "storage_bucket": "e-qur-an-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:560718730308:android:e8988d94d19300a5721811",
+        "android_client_info": {
+          "package_name": "id.co.androdevjik.equran_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCV73-ba6VFkNiLXJ8gWsyQafPTa8Yto-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
